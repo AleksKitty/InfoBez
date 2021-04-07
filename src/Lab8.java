@@ -19,7 +19,7 @@ public class Lab8 {
         int[] result32P = calculateSumPP(result16P[0], result16P[1]);
         int[] result64P = calculateSumPP(result32P[0], result32P[1]);
         int[] result128P = calculateSumPP(result64P[0], result64P[1]);
-        int[] result126P = calculateSumPQ(result128P[0], result128P[1], result2P[0], result2P[1]);
+        int[] result126P = calculateSumPQ(result128P[0], result128P[1], result2P[0], -result2P[1]);
 
         System.out.println(result126P[0] + " " + result126P[1]);
     }
