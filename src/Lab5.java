@@ -5,7 +5,7 @@ public class Lab5 {
      * Заданные параментры для 15 варианта
      */
 
-    // кривая E751(-1,1), т.е. y = x^3 - x + 1 (mod 751):
+    // кривая E751(-1,1), т.е. y^2 = x^3 - x + 1 (mod 751):
     final static int a = -1;
     // генерирующая точка G = (0, 1):
     // x = 0, y = 0
@@ -14,6 +14,7 @@ public class Lab5 {
     // что мы хотим закодировать и отправить
     final static String text = "отставной";
 
+    // точки Pm
     final static int[][] letters_encoding = {{240, 309}, {247, 266}, {243, 664}, {247, 266},
             {228, 271}, {229, 151}, {238, 576}, {240, 309}, {236, 712}};
 
@@ -112,10 +113,10 @@ public class Lab5 {
      */
     public static int[] calculateSumPP (int x1, int y1) {
 
+        int lambdaUp = 3 * x1 * x1 + a;
         int lambdaDown = 2 * y1;
 
-        // lambdaUp = a
-        int lambda = calculateMod(a, lambdaDown);
+        int lambda = calculateMod(lambdaUp, lambdaDown);
 
         // x1 == x2
         // y1 == y2
@@ -138,7 +139,6 @@ public class Lab5 {
     /*
      * x3 = lambda^2 - x1 - x2
      * y3 = lambda * (x1 - x3) - y1
-     * x1 = 0, y1 = 1, т.к. G = (0, 1)
      */
     public static int[] calculateX3Y3(int lambda, int x1, int y1, int x2) {
         int x3 = lambda * lambda - x1 - x2;

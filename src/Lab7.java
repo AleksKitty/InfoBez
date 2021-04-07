@@ -4,7 +4,7 @@ public class Lab7 {
      * Заданные параментры для 15 варианта
      */
 
-    // кривая E751(-1,1), т.е. y = x^3 - x + 1 (mod 751):
+    // кривая E751(-1,1), т.е. y^2 = x^3 - x + 1 (mod 751):
     private final static int a = -1;
 
     // 2P + 3Q – R
@@ -34,10 +34,10 @@ public class Lab7 {
      */
     public static int[] calculateSumPP (int x1, int y1) {
 
+        int lambdaUp = 3 * x1 * x1 + a;
         int lambdaDown = 2 * y1;
 
-        // lambdaUp = a
-        int lambda = calculateMod(a, lambdaDown);
+        int lambda = calculateMod(lambdaUp, lambdaDown);
 
         // x1 == x2
         // y1 == y2
