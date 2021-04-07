@@ -1,5 +1,5 @@
 
-public class Lab7 {
+public class Lab8 {
     /*
      * Заданные параментры для 15 варианта
      */
@@ -7,24 +7,21 @@ public class Lab7 {
     // кривая E751(-1,1), т.е. y^2 = x^3 - x + 1 (mod 751):
     private final static int a = -1;
 
-    // 2P + 3Q – R
-    private final static int[] P = {67, 84};
-    private final static int[] Q = {69, 241};
-    // -R: {66, -199}
-    private final static int[] R = {66, 199};
+    // искомое: 126 * P
+    private final static int[] P = {49, 183};
 
 
     public static void main(String[] args) {
         int[] result2P = calculateSumPP(P[0], P[1]);
+        int[] result4P = calculateSumPP(result2P[0], result2P[1]);
+        int[] result8P = calculateSumPP(result4P[0], result4P[1]);
+        int[] result16P = calculateSumPP(result8P[0], result8P[1]);
+        int[] result32P = calculateSumPP(result16P[0], result16P[1]);
+        int[] result64P = calculateSumPP(result32P[0], result32P[1]);
+        int[] result128P = calculateSumPP(result64P[0], result64P[1]);
+        int[] result126P = calculateSumPQ(result128P[0], result128P[1], result2P[0], result2P[1]);
 
-        int[] result2Q = calculateSumPP(Q[0], Q[1]);
-        int[] result3Q = calculateSumPQ(Q[0], Q[1], result2Q[0], result2Q[1]);
-
-        int[] resultSum2P3Q = calculateSumPQ(result2P[0], result2P[1], result3Q[0], result3Q[1]);
-
-        int[] resultSum2P3QMinusR = calculateSumPQ(resultSum2P3Q[0], resultSum2P3Q[1], R[0], -R[1]);
-
-        System.out.println(resultSum2P3QMinusR[0] + " " + resultSum2P3QMinusR[1]);
+        System.out.println(result126P[0] + " " + result126P[1]);
     }
 
 

@@ -6,16 +6,16 @@ public class Lab5 {
      */
 
     // кривая E751(-1,1), т.е. y^2 = x^3 - x + 1 (mod 751):
-    final static int a = -1;
+    private final static int a = -1;
     // генерирующая точка G = (0, 1):
     // x = 0, y = 0
-    final static int[] pointG = {0, 1};
+    private final static int[] pointG = {0, 1};
 
     // что мы хотим закодировать и отправить
-    final static String text = "отставной";
+    private final static String text = "отставной";
 
     // точки Pm
-    final static int[][] letters_encoding = {{240, 309}, {247, 266}, {243, 664}, {247, 266},
+    private final static int[][] letters_encoding = {{240, 309}, {247, 266}, {243, 664}, {247, 266},
             {228, 271}, {229, 151}, {238, 576}, {240, 309}, {236, 712}};
 
     // открытый ключ Pb
@@ -75,7 +75,7 @@ public class Lab5 {
     /*
      * k_values = {5, 3, 3, 2, 4, 19, 2, 4, 10};
      */
-    public static int[][] calculateK(int[] point) {
+    private static int[][] calculateK(int[] point) {
 
         int[][] resultFinal = new int[9][2];
 
@@ -111,7 +111,7 @@ public class Lab5 {
      * формула lambda = (3 * x1^2 + a) / 2 * y1
      * сумма двух одинаковых (P + P)
      */
-    public static int[] calculateSumPP (int x1, int y1) {
+    private static int[] calculateSumPP (int x1, int y1) {
 
         int lambdaUp = 3 * x1 * x1 + a;
         int lambdaDown = 2 * y1;
@@ -127,7 +127,7 @@ public class Lab5 {
      * формула lambda = (y2 - y1) / (x2 - x1)
      * сумма двух разных (P + Q)
      */
-    public static int[] calculateSumPQ (int x1, int y1, int x2, int y2) {
+    private static int[] calculateSumPQ (int x1, int y1, int x2, int y2) {
         int lambdaUp = (y2 - y1);
         int lambdaDown = (x2 - x1);
 
@@ -140,7 +140,7 @@ public class Lab5 {
      * x3 = lambda^2 - x1 - x2
      * y3 = lambda * (x1 - x3) - y1
      */
-    public static int[] calculateX3Y3(int lambda, int x1, int y1, int x2) {
+    private static int[] calculateX3Y3(int lambda, int x1, int y1, int x2) {
         int x3 = lambda * lambda - x1 - x2;
         int x3Lambda = calculateMod(x3, 1);
 
@@ -150,7 +150,7 @@ public class Lab5 {
         return new int[]{x3Lambda, y3Lambda};
     }
 
-    public static int calculateMod(int up, int down) {
+    private static int calculateMod(int up, int down) {
         while (up % down != 0) {
             up += 751;
         }

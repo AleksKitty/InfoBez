@@ -20,6 +20,8 @@ public class Lab6 {
     private static final ArrayList<Cm> arrayListCm = new ArrayList<>();
 
     private final static int[] data = {
+            618, 206, 99, 456,
+            425, 663, 31, 136,
             377, 456, 688, 741,
             425, 663, 636, 747,
             16, 416, 298, 526,
