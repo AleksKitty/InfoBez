@@ -21,10 +21,10 @@ public class RC6 {
      */
     private final static int Pw = 0xb7e15163, Qw = 0x9e3779b9;
 
-    // CODE TO CONVERT HEXADECIMAL NUMBERS IN STRING TO BYTE ARRAY
+    private final static String[] outputTextArray = {"ciphertext: ", "plaintext: "};
+
     /*
-     * конвертация
-     * ключ в массив байтов
+     * конвертация 16-чисел (в String) в массив байт
      */
     private static byte[] hexStringToByteArray(String s) {
         int string_len = s.length();
@@ -240,7 +240,7 @@ public class RC6 {
         BufferedWriter output_to_text_file = null;
 
         try {
-            FileReader input_file = new FileReader("input2.txt"); // данные для шифрования/расшифровки в шестнадцатиричном виде
+            FileReader input_file = new FileReader("input1.txt"); // данные для шифрования/расшифровки в шестнадцатиричном виде
             FileWriter output_file = new FileWriter("output.txt",false); // зашифрованный/расшифрованный текст
 
             BufferedReader bf = new BufferedReader(input_file);
@@ -266,25 +266,25 @@ public class RC6 {
             byte[] key = hexStringToByteArray(tmpString);
             byte[] text = hexStringToByteArray(text_data);
             int[] keySchedule = keySchedule(key);
-            if (choice.equals("Encryption")){
 
-                byte[] encrypt = encryption(text, keySchedule);
-                String encrypted_text = byteArrayToHex(encrypt);
-                encrypted_text = encrypted_text.replaceAll("..", "$0 ");
-                output_to_text_file = new BufferedWriter(output_file);
-                output_to_text_file.write("ciphertext: " + encrypted_text);
+            int index = 0;
+            byte[] crypt = null;
+            if (choice.equals("Encryption")){
+                crypt = encryption(text, keySchedule);
             }
             else if (choice.equals("Decryption")) {
-
-                byte[] decrypt = decryption(text, keySchedule);
-                String decrypted_text = byteArrayToHex(decrypt);
-                decrypted_text = decrypted_text.replaceAll("..", "$0 ");
-                output_to_text_file = new BufferedWriter(output_file);
-                output_to_text_file.write("plaintext: "+ decrypted_text);
-
+                index = 1;
+                crypt = decryption(text, keySchedule);
             } else {
                 System.out.println("Invalid option");
             }
+
+            assert crypt != null;
+            String encrypted_text = byteArrayToHex(crypt);
+            encrypted_text = encrypted_text.replaceAll("..", "$0 ");
+            output_to_text_file = new BufferedWriter(output_file);
+            output_to_text_file.write(outputTextArray[index] + encrypted_text);
+
         } catch (FileNotFoundException e) {
             System.out.println("File not found exception");
             e.printStackTrace();
