@@ -24,17 +24,16 @@ public class RC6 {
     private final static String[] outputTextArray = {"ciphertext: ", "plaintext: "};
 
 
-
     /*
      * алгоритм шифрования данных с регистрами ABCD
      */
-    private static byte[] encryption(byte[] keySchArray, int[] keySchedule){
+    private static byte[] encryption(byte[] text, int[] keySchedule){
 
         int temp, t, u;
 
-        int[] temp_data = new int[keySchArray.length / 4];
+        int[] temp_data = new int[text.length / 4];
 
-        temp_data = convertByteToInt(keySchArray, temp_data.length);
+        temp_data = convertByteToInt(text, temp_data.length);
 
         int A = temp_data[0];
         int B = temp_data[1];
@@ -68,32 +67,32 @@ public class RC6 {
         temp_data[2] = C;
         temp_data[3] = D;
 
-        return convertIntToByte(temp_data, keySchArray.length);
+        return convertIntToByte(temp_data, text.length);
     }
 
     /*
      * алгоритм дешифрования данных с регистрами ABCD
      */
-    public static byte[] decryption(byte[] keySchArray, int[] S){
+    public static byte[] decryption(byte[] text, int[] keySchedule){
 
         int temp, t, u;
         int A, B, C, D;
 
-        int[] temp_data_decryption = new int[keySchArray.length / 4];
+        int[] temp_data_decryption = new int[text.length / 4];
 
-        temp_data_decryption = convertByteToInt(keySchArray, temp_data_decryption.length);
+        temp_data_decryption = convertByteToInt(text, temp_data_decryption.length);
 
         A = temp_data_decryption[0];
         B = temp_data_decryption[1];
         C = temp_data_decryption[2];
         D = temp_data_decryption[3];
 
-        C = C - S[2 * r + 3];
-        A = A - S[2 * r + 2];
+        C = C - keySchedule[2 * r + 3];
+        A = A - keySchedule[2 * r + 2];
 
         int lgw = 5;
 
-        for(int i = r; i >= 1; i--){
+        for(int i = r; i >= 1; i--) {
             temp = D;
             D = C;
             C = B;
@@ -102,30 +101,30 @@ public class RC6 {
 
             u = rotateLeft(D * (2 * D + 1), lgw);
             t = rotateLeft(B * (2 * B + 1), lgw);
-            C= rotateRight(C - S[2 * i + 1],t) ^ u;
-            A= rotateRight(A - S[2 * i], u) ^ t;
+            C= rotateRight(C - keySchedule[2 * i + 1], t) ^ u;
+            A= rotateRight(A - keySchedule[2 * i], u) ^ t;
         }
 
-        D = D - S[1];
-        B = B - S[0];
+        D = D - keySchedule[1];
+        B = B - keySchedule[0];
 
         temp_data_decryption[0] = A;
         temp_data_decryption[1] = B;
         temp_data_decryption[2] = C;
         temp_data_decryption[3] = D;
 
-        return convertIntToByte(temp_data_decryption, keySchArray.length);
+        return convertIntToByte(temp_data_decryption, text.length);
     }
 
-    private static int OFB(byte[] text, int[] keySchedule, byte[] vectorByte) {
+    private static byte[] OFB(byte[] text, int[] keySchedule, byte[] vectorByte) {
 
-
-
+        byte[] cryptText = new byte[text.length];
         for (int i = 0; i < text.length; i++) {
-            byte[] crypt = encryption(new byte[]{vectorByte[i]}, keySchedule);
+            cryptText[i] = (byte) (text[i] ^ vectorByte[0]);
+            vectorByte = encryption(vectorByte, keySchedule);
         }
 
-        return 0;
+        return cryptText;
     }
 
     /*
@@ -135,7 +134,7 @@ public class RC6 {
         BufferedWriter output_to_text_file = null;
 
         try {
-            FileReader input_file = new FileReader("input1.txt"); // данные для шифрования/расшифровки в шестнадцатиричном виде
+            FileReader input_file = new FileReader("input2.txt"); // данные для шифрования/расшифровки в шестнадцатиричном виде
             FileWriter output_file = new FileWriter("output.txt",false); // зашифрованный/расшифрованный текст
 
             BufferedReader bf = new BufferedReader(input_file);
@@ -154,31 +153,37 @@ public class RC6 {
             // read vector
             FileReader vector_file = new FileReader("vector.txt"); // вектор инициализации в шестнадцатиричном виде
             BufferedReader bVector = new BufferedReader(vector_file);
-            String vector = bVector.readLine();
-            byte[] vectorByte = hexStringToByteArray(vector);
-
+            String vectorData = bVector.readLine();
+            vectorData = vectorData.replace(" ", "");
+            byte[] vectorByte = hexStringToByteArray(vectorData);
 
             byte[] key = hexStringToByteArray(tmpString);
             byte[] text = hexStringToByteArray(text_data);
             int[] keySchedule = keySchedule(key);
 
-            int index = 0;
+            int index = -1;
             byte[] crypt = null;
             if (choice.equals("Encryption")){
-                crypt = encryption(text, keySchedule);
+                index = 0;
+//                без OFB
+//                crypt = encryption(text, keySchedule);
+                crypt = OFB(text, keySchedule, vectorByte);
             }
             else if (choice.equals("Decryption")) {
                 index = 1;
-                crypt = decryption(text, keySchedule);
+//               без OFB
+//                crypt = decryption(text, keySchedule);
+                crypt = OFB(text, keySchedule, vectorByte);
             } else {
                 System.out.println("Invalid option");
             }
 
-            assert crypt != null;
-            String encrypted_text = byteArrayToHex(crypt);
-            encrypted_text = encrypted_text.replaceAll("..", "$0 ");
-            output_to_text_file = new BufferedWriter(output_file);
-            output_to_text_file.write(outputTextArray[index] + encrypted_text);
+            if (index != -1) {
+                String crypted_text = byteArrayToHex(crypt);
+                crypted_text = crypted_text.replaceAll("..", "$0 ");
+                output_to_text_file = new BufferedWriter(output_file);
+                output_to_text_file.write(outputTextArray[index] + crypted_text);
+            }
 
         } catch (FileNotFoundException e) {
             System.out.println("File not found exception");
@@ -205,8 +210,8 @@ public class RC6 {
     private static byte[] convertIntToByte(int[] integerArray, int length){
         byte[] int_to_byte = new byte[length];
 
-        for(int i = 0; i<length; i++){
-            int_to_byte[i] = (byte)((integerArray[i/4] >>> (i % 4) * 8) & 0xff);
+        for(int i = 0; i < length; i++){
+            int_to_byte[i] = (byte)((integerArray[i / 4] >>> (i % 4) * 8) & 0xff);
         }
 
         return int_to_byte;
