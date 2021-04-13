@@ -23,78 +23,26 @@ public class RC6 {
 
     private final static String[] outputTextArray = {"ciphertext: ", "plaintext: "};
 
-    /*
-     * конвертация 16-чисел (в String) в массив байт
-     */
-    private static byte[] hexStringToByteArray(String s) {
-        int string_len = s.length();
-        byte[] data = new byte[string_len / 2];
-        for (int i = 0; i < string_len; i += 2) {
-            data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4) + Character
-                    .digit(s.charAt(i + 1), 16));
-        }
-        return data;
-    }
 
-    /*
-     * конвертация массива байтов в 16-ый формат
-     */
-    private static String byteArrayToHex(byte[] a) {
-        StringBuilder sb = new StringBuilder(a.length * 2);
-        for (byte b : a)
-            sb.append(String.format("%02x", b & 0xff));
-        return sb.toString();
-    }
-
-    /*
-     * алгоритм подготовки ключа
-     */
-    private static int[] keySchedule(byte[] key) {
-
-        int[] S = new int[2 * r + 4];
-        S[0] = Pw;
-
-        int c = key.length / (w / 8); // определение длины массива L
-        int[] L = bytesToWords(key,  c);
-
-        for (int i = 1; i < (2 * r + 4); i++){
-            S[i] = S[i - 1] + Qw;
-        }
-
-        // перемешивание ключа
-        int A, B, i, j;
-        A = B = i = j = 0;
-
-        int v = 3 * Math.max(c, (2 * r + 4));
-
-        for (int s = 0; s < v; s++) {
-            A = S[i] = rotateLeft((S[i] + A + B), 3);
-            B = L[j] = rotateLeft(L[j] + A + B, A + B);
-            i = (i + 1) % (2 * r + 4);
-            j = (j + 1) % c;
-        }
-
-        return S;
-    }
 
     /*
      * алгоритм шифрования данных с регистрами ABCD
      */
-    private static byte[] encryption(byte[] keySchArray, int[] S){
+    private static byte[] encryption(byte[] keySchArray, int[] keySchedule){
 
         int temp, t, u;
 
         int[] temp_data = new int[keySchArray.length / 4];
 
-        temp_data = convertByteToInt(keySchArray,temp_data.length);
+        temp_data = convertByteToInt(keySchArray, temp_data.length);
 
         int A = temp_data[0];
         int B = temp_data[1];
         int C = temp_data[2];
         int D = temp_data[3];
 
-        B = B + S[0];
-        D = D + S[1];
+        B = B + keySchedule[0];
+        D = D + keySchedule[1];
 
         int lgw = 5;
 
@@ -102,8 +50,8 @@ public class RC6 {
 
             t = rotateLeft(B * (2 * B + 1),lgw);
             u = rotateLeft(D * (2 * D + 1),lgw);
-            A = rotateLeft(A ^ t, u) + S[2 * i];
-            C = rotateLeft(C ^ u, t) + S[2 * i + 1];
+            A = rotateLeft(A ^ t, u) + keySchedule[2 * i];
+            C = rotateLeft(C ^ u, t) + keySchedule[2 * i + 1];
 
             temp = A;
             A = B;
@@ -112,15 +60,15 @@ public class RC6 {
             D = temp;
         }
 
-        A = A + S[2 * r + 2];
-        C = C + S[2 * r + 3];
+        A = A + keySchedule[2 * r + 2];
+        C = C + keySchedule[2 * r + 3];
 
         temp_data[0] = A;
         temp_data[1] = B;
         temp_data[2] = C;
         temp_data[3] = D;
 
-        return convertIntToByte(temp_data,keySchArray.length);
+        return convertIntToByte(temp_data, keySchArray.length);
     }
 
     /*
@@ -166,69 +114,16 @@ public class RC6 {
         temp_data_decryption[2] = C;
         temp_data_decryption[3] = D;
 
-        return convertIntToByte(temp_data_decryption,keySchArray.length);
+        return convertIntToByte(temp_data_decryption, keySchArray.length);
     }
 
-    /*
-     * преобразование массива int в массив байт
-     */
-    private static byte[] convertIntToByte(int[] integerArray,int length){
-        byte[] int_to_byte = new byte[length];
+    private static int OFB(byte[] text, int[] keySchedule, byte[] vectorByte) {
 
-        for(int i = 0; i<length; i++){
-            int_to_byte[i] = (byte)((integerArray[i/4] >>> (i % 4) * 8) & 0xff);
+
+
+        for (int i = 0; i < text.length; i++) {
+            byte[] crypt = encryption(new byte[]{vectorByte[i]}, keySchedule);
         }
-
-        return int_to_byte;
-    }
-
-    /*
-     * преобразование массива байт в массив int
-     */
-    private static int[] convertByteToInt(byte[] arr, int length){
-        int[]  byte_to_int = new int[length];
-
-        int counter = 0;
-        for(int i = 0; i < byte_to_int.length; i++){
-            byte_to_int[i] = ((arr[counter++] & 0xff))|
-                    ((arr[counter++] & 0xff) << 8) |
-                    ((arr[counter++] & 0xff) << 16) |
-                    ((arr[counter++] & 0xff) << 24);
-        }
-
-        return byte_to_int;
-    }
-
-    /*
-     * преобразоване массива байтов, в массив слов по 32 бита (w = 32)
-     */
-    private static int[] bytesToWords(byte[] userKey, int c) {
-        int[] bytes_to_words = new int[c];
-
-        int off = 0;
-        for (int i = 0; i < c; i++) {
-            bytes_to_words[i] = ((userKey[off++] & 0xFF)) | ((userKey[off++] & 0xFF) << 8)
-                    | ((userKey[off++] & 0xFF) << 16) | ((userKey[off++] & 0xFF) << 24);
-        }
-
-        return bytes_to_words;
-    }
-
-    /*
-     * сдвиг влево
-     */
-    private static int rotateLeft(int val, int pas) {
-        return (val << pas) | (val >>> (32 - pas));
-    }
-
-    /*
-     * сдвиг вправо
-     */
-    private static int rotateRight(int val, int pas) {
-        return (val >>> pas) | (val << (32-pas));
-    }
-
-    private static int xorFunction() {
 
         return 0;
     }
@@ -302,5 +197,118 @@ public class RC6 {
                 }
             }
         }
+    }
+
+    /*
+     * преобразование массива int в массив байт
+     */
+    private static byte[] convertIntToByte(int[] integerArray, int length){
+        byte[] int_to_byte = new byte[length];
+
+        for(int i = 0; i<length; i++){
+            int_to_byte[i] = (byte)((integerArray[i/4] >>> (i % 4) * 8) & 0xff);
+        }
+
+        return int_to_byte;
+    }
+
+    /*
+     * преобразование массива байт в массив int
+     */
+    private static int[] convertByteToInt(byte[] arr, int length){
+        int[]  byte_to_int = new int[length];
+
+        int counter = 0;
+        for(int i = 0; i < byte_to_int.length; i++){
+            byte_to_int[i] = ((arr[counter++] & 0xff))|
+                    ((arr[counter++] & 0xff) << 8) |
+                    ((arr[counter++] & 0xff) << 16) |
+                    ((arr[counter++] & 0xff) << 24);
+        }
+
+        return byte_to_int;
+    }
+
+    /*
+     * преобразоване массива байтов, в массив слов по 32 бита (w = 32)
+     */
+    private static int[] bytesToWords(byte[] userKey, int c) {
+        int[] bytes_to_words = new int[c];
+
+        int off = 0;
+        for (int i = 0; i < c; i++) {
+            bytes_to_words[i] = ((userKey[off++] & 0xFF)) | ((userKey[off++] & 0xFF) << 8)
+                    | ((userKey[off++] & 0xFF) << 16) | ((userKey[off++] & 0xFF) << 24);
+        }
+
+        return bytes_to_words;
+    }
+
+    /*
+     * сдвиг влево
+     */
+    private static int rotateLeft(int val, int pas) {
+        return (val << pas) | (val >>> (32 - pas));
+    }
+
+    /*
+     * сдвиг вправо
+     */
+    private static int rotateRight(int val, int pas) {
+        return (val >>> pas) | (val << (32-pas));
+    }
+
+    /*
+     * конвертация 16-чисел (в String) в массив байт
+     */
+    private static byte[] hexStringToByteArray(String s) {
+        int string_len = s.length();
+        byte[] data = new byte[string_len / 2];
+        for (int i = 0; i < string_len; i += 2) {
+            data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4) + Character
+                    .digit(s.charAt(i + 1), 16));
+        }
+        return data;
+    }
+
+    /*
+     * конвертация массива байтов в 16-ый формат
+     */
+    private static String byteArrayToHex(byte[] a) {
+        StringBuilder sb = new StringBuilder(a.length * 2);
+        for (byte b : a)
+            sb.append(String.format("%02x", b & 0xff));
+        return sb.toString();
+    }
+
+    /*
+     * алгоритм подготовки ключа
+     */
+    private static int[] keySchedule(byte[] key) {
+
+        int[] S = new int[2 * r + 4];
+        S[0] = Pw;
+
+        int c = key.length / (w / 8); // определение длины массива L
+        int[] L = bytesToWords(key,  c);
+
+        for (int i = 1; i < (2 * r + 4); i++){
+            S[i] = S[i - 1] + Qw;
+        }
+
+        // перемешивание ключа
+        int A, B, i, j;
+        A = B = i = j = 0;
+
+        int v = 3 * Math.max(c, (2 * r + 4));
+
+        for (int s = 0; s < v; s++) {
+            A = S[i] = rotateLeft((S[i] + A + B), 3);
+            B = L[j] = rotateLeft(L[j] + A + B, A + B);
+            i = (i + 1) % (2 * r + 4);
+            j = (j + 1) % c;
+        }
+
+        return S;
     }
 }
